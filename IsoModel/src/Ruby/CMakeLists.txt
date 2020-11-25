@@ -4,3 +4,6 @@ add_test(NAME test_ruby
   WORKING_DIRECTORY $<TARGET_FILE_DIR:ruby_isomodel>
 )
 
+install(TARGETS ruby_isomodel
+  DESTINATION ruby
+)

@@ -6,6 +6,25 @@ option(BUILD_RUBY_BINDINGS "Build Ruby bindings" ON)
 option(BUILD_PYTHON_BINDINGS "Build Python bindings" ON)
 option(BUILD_CSHARP_BINDINGS "Build C# bindings" OFF)
 
+set(CPACK_BINARY_DEB OFF)
+set(CPACK_BINARY_FREEBSD OFF)
+set(CPACK_BINARY_IFW OFF)
+set(CPACK_BINARY_NSIS OFF)
+set(CPACK_BINARY_RPM OFF)
+set(CPACK_BINARY_STGZ OFF)
+set(CPACK_BINARY_TBZ2 OFF)
+set(CPACK_BINARY_TGZ OFF)
+set(CPACK_BINARY_TXZ OFF)
+set(CPACK_BINARY_TZ OFF)
+set(CPACK_BINARY_ZIP ON)
+set(CPACK_SOURCE_RPM OFF)
+set(CPACK_SOURCE_TBZ2 OFF)
+set(CPACK_SOURCE_TGZ OFF)
+set(CPACK_SOURCE_TXZ OFF)
+set(CPACK_SOURCE_TZ OFF)
+set(CPACK_SOURCE_ZIP OFF)
+set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
+
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/Products")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/Products")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/Products")
@@ -22,6 +41,13 @@ endif()
 
 include("${PROJECT_SOURCE_DIR}/ConanInstall.cmake")
 include("${PROJECT_SOURCE_DIR}/ProjectMacros.cmake")
+
+enable_testing()
+include(CTest)
+find_package(GTest REQUIRED)
+include(GoogleTest)
+
+include(CPack)
 
 # So instead, we use a generator expression to find the right value. At least it makes sense, and should be robust.
 FindValue(CONAN_SWIG_ROOT)
@@ -98,6 +124,10 @@ set (exec_name isomodel_standalone)
 add_executable(isomodel_standalone ${standalone_src})
 target_link_libraries(isomodel_standalone isomodel_lib)
 
+install(TARGETS isomodel_standalone
+  DESTINATION bin
+)
+
 if (BUILD_RUBY_BINDINGS)
   include("${PROJECT_SOURCE_DIR}/FetchRubyMinGW.cmake")
   FetchRubyMinGW()
@@ -110,11 +140,6 @@ if (BUILD_PYTHON_BINDINGS)
 endif()
 
 MAKE_SWIG_TARGET(isomodel isomodel "${PROJECT_SOURCE_DIR}/ISOModel.i" "${PROJECT_SOURCE_DIR}/ISOModel.i" isomodel_lib "")
-
-enable_testing()
-include(CTest)
-find_package(GTest REQUIRED)
-include(GoogleTest)
 
 add_subdirectory(Test)
 

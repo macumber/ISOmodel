@@ -6,3 +6,10 @@ add_test(NAME test_python
 
 set_tests_properties(test_python PROPERTIES
     ENVIRONMENT PYTHONPATH=.)
+
+install(TARGETS python_isomodel
+  DESTINATION python
+)
+install(FILES $<TARGET_FILE_DIR:python_isomodel>/isomodel.py
+  DESTINATION python
+)
