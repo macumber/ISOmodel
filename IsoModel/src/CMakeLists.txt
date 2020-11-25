@@ -3,7 +3,7 @@ project(isomodel_project)
 cmake_minimum_required(VERSION 3.14.0)
 
 option(BUILD_RUBY_BINDINGS "Build Ruby bindings" ON)
-option(BUILD_PYTHON_BINDINGS "Build Python bindings" OFF)
+option(BUILD_PYTHON_BINDINGS "Build Python bindings" ON)
 option(BUILD_CSHARP_BINDINGS "Build C# bindings" OFF)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/Products")
@@ -104,6 +104,11 @@ if (BUILD_RUBY_BINDINGS)
   get_target_property(RUBY_INCLUDE_DIRS CONAN_PKG::openstudio_ruby INTERFACE_INCLUDE_DIRECTORIES)
 endif()
 
+if (BUILD_PYTHON_BINDINGS)
+  find_package(Python COMPONENTS Interpreter Development REQUIRED)
+  include_directories(SYSTEM ${Python_INCLUDE_DIRS})
+endif()
+
 MAKE_SWIG_TARGET(isomodel isomodel "${PROJECT_SOURCE_DIR}/ISOModel.i" "${PROJECT_SOURCE_DIR}/ISOModel.i" isomodel_lib "")
 
 enable_testing()
@@ -115,4 +120,8 @@ add_subdirectory(Test)
 
 if (BUILD_RUBY_BINDINGS)
   add_subdirectory(Ruby)
+endif()
+
+if (BUILD_PYTHON_BINDINGS)
+  add_subdirectory(Python)
 endif()

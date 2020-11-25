@@ -332,6 +332,16 @@ macro(MAKE_SWIG_TARGET NAME SIMPLENAME KEY_I_FILE I_FILES PARENT_TARGET PARENT_S
 
     add_dependencies(${swig_target} ${PARENT_TARGET})
 
+    add_custom_command(TARGET ${swig_target}
+      POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/../test_data $<TARGET_FILE_DIR:${swig_target}>/test_data
+    )
+
+    add_custom_command(TARGET ${swig_target}
+      POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/python_wrapper/generated_sources/isomodel.py $<TARGET_FILE_DIR:${swig_target}>/isomodel.py
+    )
+
     # add this target to a "global" variable so python tests can require these
     list(APPEND ALL_PYTHON_BINDINGS "${swig_target}")
     #set(ALL_PYTHON_BINDINGS "${ALL_PYTHON_BINDINGS}" PARENT_SCOPE)
