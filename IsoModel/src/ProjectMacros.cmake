@@ -279,7 +279,7 @@ macro(MAKE_SWIG_TARGET NAME SIMPLENAME KEY_I_FILE I_FILES PARENT_TARGET PARENT_S
     else()
       # Python2 has been EOL since January 1, 2020
       set(SWIG_PYTHON_3_FLAG -py3)
-      message(STATUS "${MODULE} - Couldnt determine version of Python - Building SWIG Bindings for Python 3")
+      message(STATUS "${MODULE} - Couldn't determine version of Python - Building SWIG Bindings for Python 3")
     endif()
 
     add_custom_command(

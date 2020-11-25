@@ -44,7 +44,7 @@ include("${PROJECT_SOURCE_DIR}/ProjectMacros.cmake")
 
 enable_testing()
 include(CTest)
-find_package(GTest REQUIRED)
+#find_package(GTest REQUIRED)
 include(GoogleTest)
 
 include(CPack)
