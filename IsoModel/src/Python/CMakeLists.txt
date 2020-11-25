@@ -1,6 +1,6 @@
 
 add_test(NAME test_python
-  COMMAND python3 ${PROJECT_SOURCE_DIR}/Python/test.py
+  COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/Python/test.py
   WORKING_DIRECTORY $<TARGET_FILE_DIR:python_isomodel>
 )
 
