@@ -45,6 +45,7 @@ jobs:
         ruby-version: '2.5'
 
     - name: Install system libraries
+      shell: bash
       run: |
         if [ "$RUNNER_OS" == "Linux" ]; then
           sudo apt update
@@ -93,8 +94,8 @@ jobs:
     - name: Archive artifacts
       uses: actions/upload-artifact@v2
       with:
-          name: IsoModel-${{ github.sha }}-${{ matrix.os }}.${{ env.COMPRESSED_EXT }}
-          path: build/${{ matrix.COMPRESSED_PKG_PATH }}/*.${{ env.COMPRESSED_EXT }}
+          name: IsoModel-${{ github.sha }}-${{ matrix.os }}.${{ matrix.COMPRESSED_EXT }}
+          path: build/${{ matrix.COMPRESSED_PKG_PATH }}/*.${{ matrix.COMPRESSED_EXT }}
 
     - name: Test
       working-directory: ./build
