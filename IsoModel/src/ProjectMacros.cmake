@@ -268,19 +268,7 @@ macro(MAKE_SWIG_TARGET NAME SIMPLENAME KEY_I_FILE I_FILES PARENT_TARGET PARENT_S
 
 
     # Add the -py3 flag if the version used is Python 3
-    set(SWIG_PYTHON_3_FLAG "")
-    if (Python_VERSION_MAJOR)
-      if (Python_VERSION_MAJOR EQUAL 3)
-        set(SWIG_PYTHON_3_FLAG -py3)
-        message(STATUS "${MODULE} - Building SWIG Bindings for Python 3")
-      else()
-        message(STATUS "${MODULE} - Building SWIG Bindings for Python 2")
-      endif()
-    else()
-      # Python2 has been EOL since January 1, 2020
-      set(SWIG_PYTHON_3_FLAG -py3)
-      message(STATUS "${MODULE} - Couldn't determine version of Python - Building SWIG Bindings for Python 3")
-    endif()
+    set(SWIG_PYTHON_3_FLAG "-py3")
 
     add_custom_command(
       OUTPUT "${SWIG_WRAPPER_FULL_PATH}"

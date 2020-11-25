@@ -128,6 +128,10 @@ install(TARGETS isomodel_standalone
   DESTINATION bin
 )
 
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/../test_data
+  DESTINATION data
+)
+
 if (BUILD_RUBY_BINDINGS)
   include("${PROJECT_SOURCE_DIR}/FetchRubyMinGW.cmake")
   FetchRubyMinGW()
@@ -135,8 +139,11 @@ if (BUILD_RUBY_BINDINGS)
 endif()
 
 if (BUILD_PYTHON_BINDINGS)
-  find_package(Python COMPONENTS Interpreter Development REQUIRED)
-  include_directories(SYSTEM ${Python_INCLUDE_DIRS})
+  find_package(Python3 3.8 COMPONENTS Interpreter Development REQUIRED)
+  message("Python3_INCLUDE_DIRS = ${Python3_INCLUDE_DIRS}")
+  include_directories(SYSTEM ${Python3_INCLUDE_DIRS})
+  message("Python3_LIBRARY_DIRS  = ${Python3_LIBRARY_DIRS}")
+  link_directories(${Python3_LIBRARY_DIRS})
 endif()
 
 MAKE_SWIG_TARGET(isomodel isomodel "${PROJECT_SOURCE_DIR}/ISOModel.i" "${PROJECT_SOURCE_DIR}/ISOModel.i" isomodel_lib "")
