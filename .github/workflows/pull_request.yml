@@ -34,6 +34,9 @@ jobs:
           PLATFORM_NAME: Darwin
           COMPRESSED_EXT: zip
           COMPRESSED_PKG_PATH: _CPack_Packages/Darwin/ZIP
+          BUILD_RUBY_BINDINGS: ON
+          BUILD_PYTHON_BINDINGS: ON
+          BUILD_CSHARP_BINDINGS: OFF
           MACOSX_DEPLOYMENT_TARGET: 10.14
           SDKROOT: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
 
@@ -101,8 +104,9 @@ jobs:
       shell: bash
       # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: |
-        cmake --build . --target all
-        cmake --build . --target package
+        echo $(pwd)
+        echo $(ls)
+        cmake --build . --target package --config $BUILD_TYPE
 
     - name: Archive artifacts
       uses: actions/upload-artifact@v2
