@@ -3,7 +3,7 @@ project(isomodel_project)
 cmake_minimum_required(VERSION 3.14.0)
 
 option(BUILD_RUBY_BINDINGS "Build Ruby bindings" ON)
-option(BUILD_PYTHON_BINDINGS "Build Ruby bindings" OFF)
+option(BUILD_PYTHON_BINDINGS "Build Python bindings" OFF)
 option(BUILD_CSHARP_BINDINGS "Build C# bindings" OFF)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/Products")
