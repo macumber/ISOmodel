@@ -167,7 +167,7 @@ if (BUILD_RUBY_BINDINGS)
 endif()
 
 if (BUILD_PYTHON_BINDINGS)
-  find_package(Python3 3.8 COMPONENTS Interpreter Development REQUIRED)
+  find_package(Python3 3.7 EXACT COMPONENTS Interpreter Development REQUIRED)
   message("Python3_INCLUDE_DIRS = ${Python3_INCLUDE_DIRS}")
   include_directories(SYSTEM ${Python3_INCLUDE_DIRS})
   message("Python3_LIBRARY_DIRS = ${Python3_LIBRARY_DIRS}")
