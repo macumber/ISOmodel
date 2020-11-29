@@ -1,6 +1,11 @@
-name: Pull Request
+name: Build and test
 
 on:
+  push:
+    branches: [ master ]
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
   pull_request:
     branches: [ master, develop ]
 
@@ -29,7 +34,7 @@ jobs:
           COMPRESSED_PKG_PATH: _CPack_Packages/win64/ZIP
           BUILD_RUBY_BINDINGS: ON
           BUILD_PYTHON_BINDINGS: ON
-          BUILD_CSHARP_BINDINGS: OFF
+          BUILD_CSHARP_BINDINGS: ON
         - os: macos-10.15
           PLATFORM_NAME: Darwin
           COMPRESSED_EXT: zip
@@ -97,7 +102,7 @@ jobs:
         cd build
         echo $(pwd)
         cmake --version
-        cmake -DBUILD_RUBY_BINDINGS=$BUILD_RUBY_BINDINGS -DBUILD_PYTHON_BINDINGS=$BUILD_PYTHON_BINDINGS -DBUILD_CSHARP_BINDINGS=$DBUILD_CSHARP_BINDINGS ../IsoModel/src
+        cmake -DBUILD_RUBY_BINDINGS=$BUILD_RUBY_BINDINGS -DBUILD_PYTHON_BINDINGS=$BUILD_PYTHON_BINDINGS -DBUILD_CSHARP_BINDINGS=$BUILD_CSHARP_BINDINGS ../IsoModel/src
 
     - name: Build
       working-directory: ./build
@@ -114,6 +119,16 @@ jobs:
           name: IsoModel-${{ github.sha }}-${{ matrix.os }}.${{ matrix.COMPRESSED_EXT }}
           path: build/${{ matrix.COMPRESSED_PKG_PATH }}/*.${{ matrix.COMPRESSED_EXT }}
 
+    - name: Upload artifacts to release
+      if: contains(github.ref, 'refs/tags')
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: build/${{ matrix.COMPRESSED_PKG_PATH }}/*.${{ matrix.COMPRESSED_EXT }}
+        tag: ${{ github.ref }}
+        overwrite: true
+        file_glob: true
+
     - name: Test
       working-directory: ./build
       shell: bash
@@ -121,3 +136,4 @@ jobs:
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: |
           ctest -j -T test --no-compress-output -C $BUILD_TYPE
+

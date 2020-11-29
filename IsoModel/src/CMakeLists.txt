@@ -30,7 +30,12 @@ endif()
 
 option(BUILD_RUBY_BINDINGS "Build Ruby bindings" ON)
 option(BUILD_PYTHON_BINDINGS "Build Python bindings" ON)
-option(BUILD_CSHARP_BINDINGS "Build C# bindings" OFF)
+
+if(MSVC)
+  option(BUILD_CSHARP_BINDINGS "Build C# bindings" ON)
+else()
+  option(BUILD_CSHARP_BINDINGS "Build C# bindings" OFF)
+endif()
 
 set(CPACK_BINARY_DEB OFF)
 set(CPACK_BINARY_FREEBSD OFF)
@@ -175,14 +180,32 @@ if (BUILD_PYTHON_BINDINGS)
   message("Python3_EXECUTABLE = ${Python3_EXECUTABLE}")
 endif()
 
+message("BUILD_CSHARP_BINDINGS = ${BUILD_CSHARP_BINDINGS}")
+if (BUILD_CSHARP_BINDINGS)
+  # Explicitly set the `PlatformTarget` for C# projects, since AnyCPU can result in
+  # System.BadImageFormatException throws, when trying to load C++/CLI assemblies.
+  IF(CMAKE_GENERATOR_PLATFORM STREQUAL "x64")
+    SET(CMAKE_CSharp_FLAGS "/platform:x64")
+  ELSEIF(CMAKE_GENERATOR_PLATFORM STREQUAL "x86")
+      SET(CMAKE_CSharp_FLAGS "/platform:x86")
+  ELSE()
+    MESSAGE(WARNING "Generator platform is set to '${CMAKE_GENERATOR_PLATFORM}', which is not supported by managed projects. Defaulting to 'x64'...")
+    SET(CMAKE_CSharp_FLAGS "/platform:x64")
+  ENDIF()
+endif()
+
 MAKE_SWIG_TARGET(isomodel isomodel "${PROJECT_SOURCE_DIR}/ISOModel.i" "${PROJECT_SOURCE_DIR}/ISOModel.i" isomodel_lib "")
 
 add_subdirectory(Test)
+
+if (BUILD_PYTHON_BINDINGS)
+  add_subdirectory(Python)
+endif()
 
 if (BUILD_RUBY_BINDINGS)
   add_subdirectory(Ruby)
 endif()
 
-if (BUILD_PYTHON_BINDINGS)
-  add_subdirectory(Python)
+if (BUILD_CSHARP_BINDINGS)
+  add_subdirectory(CSharp)
 endif()
