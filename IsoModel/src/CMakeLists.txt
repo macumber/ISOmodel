@@ -1,6 +1,32 @@
-project(isomodel_project)
 
 cmake_minimum_required(VERSION 3.14.0)
+
+# must set CMP0025 before calling project
+cmake_policy(SET CMP0025 NEW)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Do not enable compiler specific extensions, for eg on GCC use -std=c++1z (=c++17) and not -std=gnu++17
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+project(isomodel_project)
+
+# Note: CMAKE_CXX_STANDARD set to 17 should already take care of adding -std=c++17 or equivalent
+if(APPLE)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+elseif(MSVC)
+  # warning level 3
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3")
+
+  # ignore needs to have dll-interface to be used by clients of class
+  # we will not rely on exporting templates instead all libraries must
+  # be linked against the same runtime
+  add_compile_options(/wd4251)
+
+  # ignore deprecation warnings
+  add_compile_options(/wd4996)
+
+endif()
 
 option(BUILD_RUBY_BINDINGS "Build Ruby bindings" ON)
 option(BUILD_PYTHON_BINDINGS "Build Python bindings" ON)
@@ -136,6 +162,8 @@ if (BUILD_RUBY_BINDINGS)
   include("${PROJECT_SOURCE_DIR}/FetchRubyMinGW.cmake")
   FetchRubyMinGW()
   get_target_property(RUBY_INCLUDE_DIRS CONAN_PKG::openstudio_ruby INTERFACE_INCLUDE_DIRECTORIES)
+  message("RUBY_INCLUDE_DIRS = ${RUBY_INCLUDE_DIRS}")
+  message("RUBY_MINGW_STUB_LIB = ${RUBY_MINGW_STUB_LIB}")
 endif()
 
 if (BUILD_PYTHON_BINDINGS)

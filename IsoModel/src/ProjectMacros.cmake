@@ -135,6 +135,15 @@ macro(MAKE_SWIG_TARGET NAME SIMPLENAME KEY_I_FILE I_FILES PARENT_TARGET PARENT_S
   list(REMOVE_DUPLICATES this_depends)
   set(${NAME}_SWIG_Depends "${this_depends}")
   #set(${NAME}_SWIG_Depends "${this_depends}" PARENT_SCOPE)
+  
+  if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "^(Apple)?Clang$")
+    # using Clang
+    set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -undefined dynamic_lookup")
+  elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    # using GCC
+    #set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} --unresolved-symbols=ignore-all")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} --unresolved-symbols=ignore-all")
+  endif()
 
   # Ruby bindings
   if(BUILD_RUBY_BINDINGS)
@@ -316,7 +325,8 @@ macro(MAKE_SWIG_TARGET NAME SIMPLENAME KEY_I_FILE I_FILES PARENT_TARGET PARENT_S
       endif()
     endif()
 
-    target_link_libraries(${swig_target} ${PARENT_TARGET} ${PYTHON_Libraries})
+    target_include_directories(${swig_target} PRIVATE ${Python3_INCLUDE_DIRS})
+    target_link_libraries(${swig_target} ${PARENT_TARGET} ${Python3_LIBRARIES})
 
     add_dependencies(${swig_target} ${PARENT_TARGET})
 

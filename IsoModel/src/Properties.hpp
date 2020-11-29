@@ -29,7 +29,7 @@ namespace isomodel {
  * iterator to return the keys
  */
 
-struct ISOMODEL_API KeyGetter: public std::unary_function<std::map<std::string, std::string>::value_type, std::string>
+struct ISOMODEL_API KeyGetter
 {
   std::string operator()(const std::map<std::string, std::string>::value_type& value) const;
 };
