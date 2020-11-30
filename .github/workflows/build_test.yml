@@ -19,47 +19,94 @@ jobs:
       # fail-fast: Default is true, switch to false to allow one platform to fail and still run others
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, windows-2019, macos-10.15]
+        name: [ubuntu-20.04, windows-2019-64, windows-2019-32, macos-10.15]
         include:
-        - os: ubuntu-20.04
+        - name: ubuntu-20.04
+          os: ubuntu-20.04
           PLATFORM_NAME: Linux
           COMPRESSED_EXT: zip
           COMPRESSED_PKG_PATH: _CPack_Packages/Linux/ZIP
           BUILD_RUBY_BINDINGS: ON
           BUILD_PYTHON_BINDINGS: ON
           BUILD_CSHARP_BINDINGS: OFF
-        - os: windows-2019
+          PYTHON_ARCHITECTURE: x64
+        - name: windows-2019-64
+          os: windows-2019
           PLATFORM_NAME: Windows
           COMPRESSED_EXT: zip
           COMPRESSED_PKG_PATH: _CPack_Packages/win64/ZIP
           BUILD_RUBY_BINDINGS: ON
           BUILD_PYTHON_BINDINGS: ON
           BUILD_CSHARP_BINDINGS: ON
-        - os: macos-10.15
+          PYTHON_ARCHITECTURE: x64
+        - name: windows-2019-32
+          os: windows-2019
+          PLATFORM_NAME: Windows
+          COMPRESSED_EXT: zip
+          COMPRESSED_PKG_PATH: _CPack_Packages/win32/ZIP
+          CMAKE_GENERATOR: Visual Studio 16 2019
+          CMAKE_GENERATOR_PLATFORM: Win32
+          BUILD_RUBY_BINDINGS: OFF
+          BUILD_PYTHON_BINDINGS: ON
+          BUILD_CSHARP_BINDINGS: ON
+          PYTHON_ARCHITECTURE: x86
+        - name: macos-10.15
+          os: macos-10.15
           PLATFORM_NAME: Darwin
           COMPRESSED_EXT: zip
           COMPRESSED_PKG_PATH: _CPack_Packages/Darwin/ZIP
           BUILD_RUBY_BINDINGS: ON
           BUILD_PYTHON_BINDINGS: ON
           BUILD_CSHARP_BINDINGS: OFF
+          PYTHON_ARCHITECTURE: x64
           MACOSX_DEPLOYMENT_TARGET: 10.14
           SDKROOT: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
 
     steps:
+
+    - name: Set OS-specific options and system dependencies
+      # Use a bash shell so we can use the same syntax for environment variable
+      # access regardless of the host operating system
+      shell: bash
+      run: |
+        DO_BUILD=1
+        if [ "${{ matrix.name }}" == "windows-2019-32" ]; then
+          if [[ ${{ github.ref }} =~ .*refs/tags.* ]]; then
+            DO_BUILD=1
+          elif [[ ${{ github.ref }} =~ .*master.* ]]; then
+            DO_BUILD=1
+          else
+            # don't do 32 bit build on PRs
+            DO_BUILD=0
+          fi;
+        fi;
+
+        echo DO_BUILD=${DO_BUILD} >> $GITHUB_ENV
+        echo CMAKE_GENERATOR=${{ matrix.CMAKE_GENERATOR }} >> $GITHUB_ENV
+        echo CMAKE_GENERATOR_PLATFORM=${{ matrix.CMAKE_GENERATOR_PLATFORM }} >> $GITHUB_ENV
+        echo BUILD_RUBY_BINDINGS=${{ matrix.BUILD_RUBY_BINDINGS }} >> $GITHUB_ENV
+        echo BUILD_PYTHON_BINDINGS=${{ matrix.BUILD_PYTHON_BINDINGS }} >> $GITHUB_ENV
+        echo BUILD_CSHARP_BINDINGS=${{ matrix.BUILD_CSHARP_BINDINGS }} >> $GITHUB_ENV
+
     - uses: actions/checkout@v2
+      if: ${{env.DO_BUILD == 1}}
       with:
         ref: ${{github.event.pull_request.head.ref}}
         repository: ${{github.event.pull_request.head.repo.full_name}}
 
     - uses: actions/setup-python@v2
+      if: ${{env.DO_BUILD == 1}}
       with:
         python-version: '3.7.x'
+        architecture: ${{ matrix.PYTHON_ARCHITECTURE }}
 
     - uses: actions/setup-ruby@v1
+      if: ${{env.DO_BUILD == 1}}
       with:
         ruby-version: '2.5'
 
     - name: Install system libraries
+      if: ${{env.DO_BUILD == 1}}
       shell: bash
       run: |
         if [ "$RUNNER_OS" == "Linux" ]; then
@@ -72,6 +119,7 @@ jobs:
         fi;
 
     - name: Install conan
+      if: ${{env.DO_BUILD == 1}}
       run: |
           python --version
           pip install conan
@@ -80,16 +128,8 @@ jobs:
           conan config set general.revisions_enabled=True
           conan config set general.parallel_download=8
 
-    - name: Set OS-specific options and system dependencies
-      # Use a bash shell so we can use the same syntax for environment variable
-      # access regardless of the host operating system
-      shell: bash
-      run: |
-        echo BUILD_RUBY_BINDINGS=${{ matrix.BUILD_RUBY_BINDINGS }} >> $GITHUB_ENV
-        echo BUILD_PYTHON_BINDINGS=${{ matrix.BUILD_PYTHON_BINDINGS }} >> $GITHUB_ENV
-        echo BUILD_CSHARP_BINDINGS=${{ matrix.BUILD_CSHARP_BINDINGS }} >> $GITHUB_ENV
-
     - name: Configure CMake
+      if: ${{env.DO_BUILD == 1}}
       # Use a bash shell so we can use the same syntax for environment variable
       # access regardless of the host operating system
       shell: bash
@@ -101,10 +141,14 @@ jobs:
         mkdir -p build
         cd build
         echo $(pwd)
+
+        echo "CMAKE_GENERATOR = $CMAKE_GENERATOR"
+        echo "CMAKE_GENERATOR_PLATFORM = $CMAKE_GENERATOR_PLATFORM"
         cmake --version
         cmake -DBUILD_RUBY_BINDINGS=$BUILD_RUBY_BINDINGS -DBUILD_PYTHON_BINDINGS=$BUILD_PYTHON_BINDINGS -DBUILD_CSHARP_BINDINGS=$BUILD_CSHARP_BINDINGS ../IsoModel/src
 
     - name: Build
+      if: ${{env.DO_BUILD == 1}}
       working-directory: ./build
       shell: bash
       # Execute the build.  You can specify a specific target with "--target <NAME>"
@@ -114,13 +158,14 @@ jobs:
         cmake --build . --target package --config $BUILD_TYPE
 
     - name: Archive artifacts
+      if: ${{env.DO_BUILD == 1}}
       uses: actions/upload-artifact@v2
       with:
-          name: IsoModel-${{ github.sha }}-${{ matrix.os }}.${{ matrix.COMPRESSED_EXT }}
+          name: IsoModel-${{ github.sha }}-${{ matrix.name }}.${{ matrix.COMPRESSED_EXT }}
           path: build/${{ matrix.COMPRESSED_PKG_PATH }}/*.${{ matrix.COMPRESSED_EXT }}
 
     - name: Upload artifacts to release
-      if: contains(github.ref, 'refs/tags')
+      if: ${{env.DO_BUILD == 1 && contains(github.ref, 'refs/tags')}}
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -130,6 +175,7 @@ jobs:
         file_glob: true
 
     - name: Test
+      if: ${{env.DO_BUILD == 1}}
       working-directory: ./build
       shell: bash
       # Execute tests defined by the CMake configuration.

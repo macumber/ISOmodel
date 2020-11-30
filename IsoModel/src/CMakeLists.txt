@@ -144,6 +144,7 @@ set(isomodel_lib_src
 )
 
 add_library(isomodel_lib STATIC ${isomodel_lib_src})
+target_include_directories(isomodel_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(isomodel_lib CONAN_PKG::boost)
 target_compile_options(isomodel_lib PUBLIC "-DISOMODEL_STANDALONE")
 
@@ -180,13 +181,14 @@ if (BUILD_PYTHON_BINDINGS)
   message("Python3_EXECUTABLE = ${Python3_EXECUTABLE}")
 endif()
 
-message("BUILD_CSHARP_BINDINGS = ${BUILD_CSHARP_BINDINGS}")
 if (BUILD_CSHARP_BINDINGS)
   # Explicitly set the `PlatformTarget` for C# projects, since AnyCPU can result in
   # System.BadImageFormatException throws, when trying to load C++/CLI assemblies.
   IF(CMAKE_GENERATOR_PLATFORM STREQUAL "x64")
     SET(CMAKE_CSharp_FLAGS "/platform:x64")
   ELSEIF(CMAKE_GENERATOR_PLATFORM STREQUAL "x86")
+      SET(CMAKE_CSharp_FLAGS "/platform:x86")
+  ELSEIF(CMAKE_GENERATOR_PLATFORM STREQUAL "Win32")
       SET(CMAKE_CSharp_FLAGS "/platform:x86")
   ELSE()
     MESSAGE(WARNING "Generator platform is set to '${CMAKE_GENERATOR_PLATFORM}', which is not supported by managed projects. Defaulting to 'x64'...")

@@ -3,7 +3,6 @@
 #  COMMAND ipy ${PROJECT_SOURCE_DIR}/CSharp/test.py
 #  WORKING_DIRECTORY $<TARGET_FILE_DIR:csharp_isomodel>
 #)
-message("In CSharp CMakeLists")
 
 install(TARGETS csharp_isomodel
   DESTINATION csharp
